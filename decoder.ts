@@ -5,17 +5,21 @@ import { mapIn, forwardTranslate, mapOut, toBase64 } from './util';
 const STRATEGY_BOARD_PREFIX = '[stgy:a';
 const STRATEGY_BOARD_SUFFIX = ']';
 
-function error(message: string) {
-    window.alert(message);
+function error(message: string, suppressErrors: boolean) {
+    if (suppressErrors) {
+        console.error(message);
+    } else {
+        window.alert(message);
+    }
 }
 
-export function decodeStrategyBoardShareString(shareString: string) {
+export function decodeStrategyBoardShareString(shareString: string, suppressErrors: boolean = false) {
     if (
         !shareString.startsWith(STRATEGY_BOARD_PREFIX) ||
         !shareString.endsWith(STRATEGY_BOARD_SUFFIX) ||
         shareString.length < STRATEGY_BOARD_PREFIX.length + STRATEGY_BOARD_SUFFIX.length + 1
     ) {
-        error('Invalid strategy board.');
+        error('Invalid strategy board.', suppressErrors);
         return null;
     }
 
@@ -42,7 +46,7 @@ export function decodeStrategyBoardShareString(shareString: string) {
 
         return decompressed;
     } catch (e) {
-        error('Invalid strategy board.');
+        error('Invalid strategy board.', suppressErrors);
         return null;
     }
 }
