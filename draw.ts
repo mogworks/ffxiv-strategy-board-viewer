@@ -198,6 +198,10 @@ async function drawObject(obj: SBObject) {
         return;
     }
 
+    if (!obj.flags.visible) {
+        return;
+    }
+
     const scale = obj.scale * (objectScaleFactor[obj.id] ?? 1);
     let image: HTMLImageElement;
 

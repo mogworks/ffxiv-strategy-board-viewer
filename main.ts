@@ -5,9 +5,10 @@ import { drawStrategyBoard } from './draw';
 document.getElementById('form')?.addEventListener('submit', async (event: Event) => {
     event.preventDefault();
     const input = document.getElementById('input') as HTMLInputElement;
-    const strategyBoardData = decodeStrategyBoardShareString(input.value);
+    const inputValue = input.value.trim();
+    const strategyBoardData = decodeStrategyBoardShareString(inputValue);
     if (strategyBoardData) {
-        window.location.hash = input.value;
+        window.location.hash = inputValue;
         drawStrategyBoard(strategyBoardData);
     }
 });
@@ -17,7 +18,8 @@ const hash = window.location.hash.substring(1);
 
 let strategyBoardData: Uint8Array | null = null;
 if (hash !== '') {
-    strategyBoardData = decodeStrategyBoardShareString(hash, true);
+    console.log('Strategy board in hash:', hash);
+    strategyBoardData = decodeStrategyBoardShareString(window.decodeURIComponent(hash), true);
 }
 
 if (strategyBoardData) {
