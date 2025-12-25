@@ -31,7 +31,7 @@ function duplicateImage(image: HTMLImageElement, horizontalCount: number = 1, ve
     return canvas;
 }
 
-function makeAnnulusSector(innerRadius: number, outerRadius: number, arcAngle: number) {
+function makeAnnulusSector(innerRadius: number, outerRadius: number, arcAngle: number, image: HTMLImageElement | null) {
     const x = outerRadius;
     const y = outerRadius;
     const startAngle = -Math.PI / 2;
@@ -42,7 +42,6 @@ function makeAnnulusSector(innerRadius: number, outerRadius: number, arcAngle: n
     canvas.height = outerRadius * 2;
 
     const ctx = canvas.getContext('2d')!;
-    ctx.fillStyle = 'rgb(255 144 0 / 0.75)';
 
     // outside arc
     ctx.arc(x, y, outerRadius, startAngle, endAngle, false);
@@ -52,8 +51,16 @@ function makeAnnulusSector(innerRadius: number, outerRadius: number, arcAngle: n
     ctx.arc(x, y, innerRadius, endAngle, startAngle, true);
     // line to outside
     ctx.lineTo(x + outerRadius * Math.cos(startAngle), y + outerRadius * Math.sin(startAngle));
-    ctx.closePath();
-    ctx.fill();
+
+    if (!image) {
+        ctx.fillStyle = 'rgb(255 144 0 / 0.75)';
+        ctx.closePath();
+        ctx.fill();
+    } else {
+        console.log(image)
+        ctx.clip();
+        ctx.drawImage(image, 0, 0, outerRadius * 2, outerRadius * 2);
+    }
 
     // below we calculate the edge of the ring to crop the canvas to remove any transparent pixels,
     // because SE does this and we need to recreate it so we have a (close to) matching bounding box
@@ -149,14 +156,15 @@ function drawRectangle(obj: SBObject) {
     ctx.restore();
 }
 
-function drawDonut(obj: SBObject) {
+function drawDonut(obj: SBObject, image: HTMLImageElement | null = null) {
     const arcAngle = obj.param1 / 180 * Math.PI;
     // always 0 for fan AoE
     const innerRadius = obj.id === 10 ? 0 : obj.param2;
-    const outerRadius = 250;
+    // slightly smaller radius for donut, to try and match ingame sizes
+    const outerRadius = obj.id === 10 ? 256 : 250;
 
     drawImage(
-        makeAnnulusSector(innerRadius, outerRadius, arcAngle),
+        makeAnnulusSector(innerRadius, outerRadius, arcAngle, image),
         obj.coordinates.x,
         obj.coordinates.y,
         obj.angle,
@@ -232,8 +240,13 @@ async function drawObject(obj: SBObject) {
             );
             break;
 
-        // fan AoE & donut
+        // fan AoE
         case 10:
+            image = await loadImage('assets/objects/9.webp');
+            drawDonut(obj, image);
+            break;
+
+        // donut
         case 17:
             drawDonut(obj);
             break;
